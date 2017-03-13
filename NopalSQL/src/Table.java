@@ -57,9 +57,11 @@ public class Table {
                 new String[]{"edad","30"},
             }, "genero", "H");
             
-            int del = t.delete("genero", "H");
+            //int del = t.delete("genero", "H");
             
-            String[][][] rows = t.select(new String[]{"edad"},"genero", "H");
+            String[][][] rows = t.select(null,null,null);
+            
+            int a = 1;
             
         }catch(Exception e){
             e.printStackTrace();
@@ -77,7 +79,7 @@ public class Table {
         
         for(int i=0;i<fields.length;i++){
             String[] field = fields[i];
-            cols[i] = field[0];
+            cols[i] = field[1];
             out.println("private "+field[0]+" "+field[1]+";");
             out.println("public void set"+field[1]+"("+field[0]+" value){this."+field[1]+" = value;}");
             out.println("public "+field[0]+" get"+field[1]+"(){return this."+field[1]+";}");
