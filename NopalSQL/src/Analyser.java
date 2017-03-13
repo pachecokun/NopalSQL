@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-
 public class Analyser{
 	private String q;
 	private int ptr, i;
@@ -55,6 +54,10 @@ public class Analyser{
 		TABLES,
 		","
 	};
+        
+        ArrayList<Database> databases = new ArrayList<>();
+        int sel = -1;
+        
 	public String[] getWords(){
 		return words;
 	}
@@ -63,9 +66,17 @@ public class Analyser{
 	}
 	
 	private boolean error_sintaxis(){
-		message = "Revisar sintaxis cerca de \'"+words[i-1]+" "+words[i]+"\'";
+		message = "ERROR: Revisar sintaxis cerca de \'"+words[i-1]+" "+words[i]+"\'";
 		return false;
 	}
+        private boolean noDB_error(){
+            message = "Ninguna base de datos seleccionada.";
+            return false;
+        }
+        private boolean error(String s){
+            message = s;
+            return false;
+        }
 	private boolean wordIs(String s){
 		return words[i].equalsIgnoreCase(s);
 	}
@@ -235,24 +246,45 @@ public class Analyser{
 	private boolean validar_show(){
 		String next = words[i];
 		i++;
-		if(next.equalsIgnoreCase(DATABASES)){
-			message = "Se mostraran las bases de datos";
-			if(i == WORDS_LIMIT)
-				return true;
+		if(next.equalsIgnoreCase(DATABASES) && i == WORDS_LIMIT){
+                        if(databases.size() == 0){
+                            message = "\tVacio";
+                        }
+                        else{
+                            message = "-------- BASES DE DATOS --------";
+                            for(int j = 0; j < databases.size(); j++){
+                                message += "\n"+databases.get(j).getName();
+                            }
+                        }
+			return true;
 		}
-		else if(next.equalsIgnoreCase(TABLES)){
-			message = "Se mostraran las tablas en la base de datos";
-			if(i == WORDS_LIMIT)
-				return true;
+		else if(next.equalsIgnoreCase(TABLES) && i == WORDS_LIMIT){
+                    if(sel < 0)
+                        return noDB_error();
+                    Database db = databases.get(sel);
+                    String [] tables = db.showTables();
+                    if(tables.length == 0){
+                        message = "\t Vacio";
+                    }
+                    else{
+                        message = "---- Tablas en "+db.getName()+" ----";
+                        for (String table : tables) {
+                            message += "\n" + table;
+                        }
+                    }
+                    return true;
 		}
 		return error_sintaxis();
 	}
 	private boolean validar_create_database(){
 		if(nombre_valido()){
-			message = "Se creara la base de datos \'"+words[i]+"\'";
-			i++;
-			if(i==WORDS_LIMIT)
-				return true;
+                    Database db = new Database(words[i]);
+                    i++;
+                    if(i==WORDS_LIMIT){
+                        databases.add(db);
+                        message = "Hecho";
+                        return true;
+                    }
 		}
 		else{
 			message = "Nombre \'"+words[i]+"\' no valido";
@@ -262,10 +294,19 @@ public class Analyser{
 	}
 	private boolean validar_drop_database(){
 		if(nombre_valido()){
-			message = "Se eliminara la base de datos \'"+words[i]+"\'";
+			String name = words[i];
 			i++;
-			if(i==WORDS_LIMIT)
-				return true;
+			if(i==WORDS_LIMIT){
+                            for(int j=0; j<databases.size(); j++){
+                                if(databases.get(j).getName().equals(name)){
+                                    databases.remove(j);
+                                    message = "Hecho";
+                                    return true;
+                                }
+                            }
+                            message = "Base de datos '"+name+"' desconocida";
+                            return false;
+                        }
 		}
 		else{
 			message = "Nombre \'"+words[i]+"\' no valido";
@@ -275,10 +316,19 @@ public class Analyser{
 	}
 	private boolean validar_use(){
 		if(nombre_valido()){
-			message = "Se usara la base de datos \'"+words[i]+"\'";
+			String name = words[i];
 			i++;
-			if(i==WORDS_LIMIT)
-				return true;
+			if(i==WORDS_LIMIT){
+                            for(int j=0; j<databases.size(); j++){
+                                if(databases.get(j).getName().equals(name)){
+                                    sel = j;
+                                    message = "Base de datos seleccionada";
+                                    return true;
+                                }
+                            }
+                            message = "Base de datos '"+name+"' desconocida";
+                            return false;
+                        }
 		}
 		else{
 			message = "Nombre \'"+words[i]+"\' no valido";
@@ -287,11 +337,18 @@ public class Analyser{
 		return error_sintaxis();
 	}
 	private boolean validar_drop_table(){
+            if(sel < 0)
+                return noDB_error();
+            Database db = databases.get(sel);
 		if(nombre_valido()){
-			message = "Se eliminara la tabla \'"+words[i]+"\'";
+			String name = words[i];
 			i++;
-			if(i==WORDS_LIMIT)
-				return true;
+			if(i==WORDS_LIMIT){
+                            db.dropTable(name);
+                            databases.set(sel, db);
+                            message = "Hecho";
+                            return true;
+                        }
 		}
 		else{
 			message = "Nombre \'"+words[i]+"\' no valido";
@@ -299,6 +356,8 @@ public class Analyser{
 		}
 		return error_sintaxis();
 	}
+        
+        //FALTA
 	private boolean validar_create_table(){
 		if(nombre_valido() && words[i+1].equalsIgnoreCase("(")){
 			message = "Se creara la tabla con los valores:";
