@@ -50,9 +50,9 @@ public class Database {
         return t.update(fields, field, value);
     }
     
-    public String[][][] select(String name,String field, String value) throws Exception{
+    public String[][][] select(String name,String[] fields,String field, String value) throws Exception{
         Table t = tables.get(name);
-        return t.select(field, value);
+        return t.select(fields,field, value);
     }
     
     public int delete(String name,String field,String value) throws Exception{

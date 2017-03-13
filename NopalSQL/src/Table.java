@@ -59,7 +59,7 @@ public class Table {
             
             int del = t.delete("genero", "H");
             
-            String[][][] rows = t.select("genero", "H");
+            String[][][] rows = t.select(new String[]{"edad"},"genero", "H");
             
         }catch(Exception e){
             e.printStackTrace();
@@ -78,7 +78,6 @@ public class Table {
         for(int i=0;i<fields.length;i++){
             String[] field = fields[i];
             cols[i] = field[0];
-            field[1] = field[1].toLowerCase();
             out.println("private "+field[0]+" "+field[1]+";");
             out.println("public void set"+field[1]+"("+field[0]+" value){this."+field[1]+" = value;}");
             out.println("public "+field[0]+" get"+field[1]+"(){return this."+field[1]+";}");
@@ -172,28 +171,29 @@ public class Table {
         return res.toArray();
     }
     
-    public String[][] rowToString(Object o)throws Exception{
+    public String[][] rowToString(String[]fields,Object o)throws Exception{
         ArrayList<String[]> res = new ArrayList<>();
-        
-        for(Method m:c.getDeclaredMethods()){
-            if(m.getName().startsWith("get")){
-                String[] field = new String[]{m.getName().substring(3),""+m.invoke(o)};
-                res.add(field);
-            }
+        if(fields == null){
+            fields = cols;
+        }        
+        for(String field:fields){
+            Method m = c.getDeclaredMethod("get"+field);
+            res.add( new String[]{field,""+m.invoke(o)});
         }
         return res.toArray(new String[0][0]);
     }
     
-    public String[][][] rowsToString(Object[] rows) throws Exception{
+    public String[][][] rowsToString(String[]fields,Object[] rows) throws Exception{
         String[][][] res= new String[rows.length][][];
         for(int i=0;i<rows.length;i++){
-            res[i] = rowToString(rows[i]);
+            res[i] = rowToString(fields,rows[i]);
         }
         return res;
     }
     
-    public String[][][] select(String field,String value) throws Exception{
-        return rowsToString(where(field,value));
+    public String[][][] select(String[]fields,String field,String value) throws Exception{
+        
+        return rowsToString(fields,where(field,value));
     }
     
     public int delete(String field,String value) throws Exception{
