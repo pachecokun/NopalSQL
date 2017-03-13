@@ -123,6 +123,10 @@ public class Table {
     }
     
     public Object[] where(String field,String value) throws Exception{        
+        if(field==null && value==null){
+            return rows.toArray(new Object[0]);
+        }
+        
         ArrayList<Object> res = new ArrayList<>();
         
         for(Object o:rows){

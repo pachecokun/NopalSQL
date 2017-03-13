@@ -24,15 +24,15 @@ public class Database {
         return name;
     }
     
-    public String[] getTableNames(){
+    public String[] showTables(){
         return tables.keySet().toArray(new String[0]);
     }
     
-    public void addTable(String name,String[][]fields){
+    public void createTable(String name,String[][]fields){
         tables.put(name, new Table(name,fields));
     }
     
-    public void removeTable(String name){
+    public void dropTable(String name){
         tables.remove(name);
     }
     
@@ -43,6 +43,21 @@ public class Database {
             fields[i] = new String[]{t.cols[i],values[i]};
         }
         t.insertRow(fields);
+    }
+    
+    public int update(String name,String[][]fields,String field,String value)throws Exception{
+        Table t = tables.get(name);
+        return t.update(fields, field, value);
+    }
+    
+    public String[][][] select(String name,String field, String value) throws Exception{
+        Table t = tables.get(name);
+        return t.select(field, value);
+    }
+    
+    public int delete(String name,String field,String value) throws Exception{
+        Table t = tables.get(name);
+        return t.delete(field, value);
     }
     
 }
