@@ -48,6 +48,7 @@ public class Chat {
 
     public void sendMessage(String dest,String str){
         sendString(dest,"message", str);
+        listener.messageReceived(name, str);
     }
     
     public void sendFile(String dest,String file){
