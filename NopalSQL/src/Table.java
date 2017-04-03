@@ -80,6 +80,9 @@ public class Table {
         for(int i=0;i<fields.length;i++){
             String[] field = fields[i];
             cols[i] = field[1];
+            if(field[0].equals("varchar")){
+                field[0]="String";
+            }
             out.println("private "+field[0]+" "+field[1]+";");
             out.println("public void set"+field[1]+"("+field[0]+" value){this."+field[1]+" = value;}");
             out.println("public "+field[0]+" get"+field[1]+"(){return this."+field[1]+";}");
@@ -165,6 +168,11 @@ public class Table {
                         if(data==value.charAt(0))
                         res.add(o);
                     }
+                    else if(type==String.class){
+                        String data = (String)m.invoke(o);
+                        if(data.equals(value))
+                        res.add(o);
+                    }
                 }
             }
         }
@@ -235,6 +243,10 @@ public class Table {
                     }
                     else if(type==char.class){
                         Character data = f[1].charAt(0);
+                        m.invoke(o,data);
+                    }
+                    else if(type==String.class){
+                        String data = f[1];
                         m.invoke(o,data);
                     }
                     
