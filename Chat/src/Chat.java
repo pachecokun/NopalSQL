@@ -1,7 +1,13 @@
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -20,10 +26,13 @@ public class Chat {
     ChatListener listener;
     InetAddress group;
     
-    public void sendString(String dest,String type,String str){
+    FileInputStream fis;
+    FileOutputStream fos;
+    
+    private void sendString(String dest,String type,String str){
         try{
             str = ""+dest+";;;"+name+";;;"+type+";;;"+str;
-            //System.out.println("Enviando mensaje: "+str);
+            System.out.println("Enviando mensaje: "+str);
             byte[] buf = str.getBytes();
             DatagramPacket p = new DatagramPacket(buf, buf.length,group,6666);
             s.send(p);
@@ -33,15 +42,32 @@ public class Chat {
     }
     
     
-    public void handshake(String dest){
+    private void handshake(String dest){
         sendString(dest,"handshake", "");
     }
 
     public void sendMessage(String dest,String str){
-        sendString("","message", str);
+        sendString(dest,"message", str);
     }
     
-    public void handleMessage(String msg){
+    public void sendFile(String dest,String file){
+        try{
+            fis = new FileInputStream(file);
+            sendString(dest, "file", file);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    private void receiveFile(String sender, String file){
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(Chat.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
+    private void handleMessage(String msg){
         String[] parts = msg.split(";;;");
         String dest = parts[0];
         String sender = parts[1];
@@ -54,11 +80,21 @@ public class Chat {
                     handshake(sender);
                 }
             }
-            if(type.equals("message")){
+            else if(type.equals("message")){
                 listener.messageReceived(sender, data);
+            }
+            else if(type.equals("disconnect")){
+                listener.clientDisconnected(sender);
+            }
+            else if(type.equals("file")){
+                receiveFile(sender,  data);
             }
             //System.out.println("Mensaje["+type+"] recibido de "+sender+": "+data);
         }
+    }
+    
+    private void disconnect(){
+        sendString("", "disconnect", "");
     }
     
     public Chat(String name, ChatListener listener) {
@@ -72,12 +108,11 @@ public class Chat {
                 @Override
                 public void run() {
                     try{
-                        byte[] buffer = new byte[500];
-                        DatagramPacket p = new DatagramPacket(buffer,buffer.length);
                         while(true){
+                            byte[] buffer = new byte[500];
+                            DatagramPacket p = new DatagramPacket(buffer,buffer.length);
                             s.receive(p);
                             handleMessage(new String(buffer));
-                            
                         }
                     }catch(Exception e){
                         e.printStackTrace();
@@ -88,13 +123,18 @@ public class Chat {
         }catch(Exception e){
             e.printStackTrace();
         }
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+        public void run() {
+            disconnect();
+        }
+    }, "Shutdown-thread"));
         handshake("");
     }
 
     
     
     public static void main(String[] args) {
-        Chat c = new Chat("fdsa",new ChatListener() {
+        Chat c = new Chat("trux",new ChatListener() {
             @Override
             public void messageReceived(String sender, String msg) {
                 System.out.println(sender+": "+msg);
@@ -115,7 +155,7 @@ public class Chat {
                 System.out.println(name+" desconectado");
             }
         });
-        c.sendMessage("","lawl");
+        c.sendMessage("","hola");
     }
     
 }
