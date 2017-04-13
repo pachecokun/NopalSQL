@@ -72,10 +72,10 @@ public class Chat {
         String[] parts = msg.split(";;;");
         String dest = parts[0];
         String sender = parts[1];
-        if(!sender.equals(name)&&(dest.length()==0||dest.equals(name))){
+        if(dest.length()==0||dest.equals(name)){
             String type = parts[2];
             String data = parts[3];
-            if(type.equals("handshake")){
+            if(type.equals("handshake") && !sender.equals(name)){
                 listener.clientConnected(sender);
                 if(dest.equals("")){
                     handshake(sender);
