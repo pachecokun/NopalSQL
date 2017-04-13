@@ -48,7 +48,6 @@ public class Chat {
 
     public void sendMessage(String dest,String str){
         sendString(dest,"message", str);
-        listener.messageReceived(name, str);
     }
     
     public void sendFile(String dest,String file){
@@ -72,22 +71,23 @@ public class Chat {
         String[] parts = msg.split(";;;");
         String dest = parts[0];
         String sender = parts[1];
-        if(dest.length()==0||dest.equals(name)){
+        if(dest.length()==0||dest.equals(name)||sender.equals(name)){
             String type = parts[2];
             String data = parts[3];
             if(type.equals("handshake") && !sender.equals(name)){
-                listener.clientConnected(sender);
+                boolean resp = dest.length()!=0;
+                listener.clientConnected(resp, sender);
                 if(dest.equals("")){
                     handshake(sender);
                 }
             }
             else if(type.equals("message")){
-                listener.messageReceived(sender, data);
+                listener.messageReceived(dest, sender, data);
             }
             else if(type.equals("disconnect")){
                 listener.clientDisconnected(sender);
             }
-            else if(type.equals("file")){
+            else if(type.equals("file") && !sender.equals(name)){
                 receiveFile(sender,  data);
             }
             //System.out.println("Mensaje["+type+"] recibido de "+sender+": "+data);
@@ -133,7 +133,7 @@ public class Chat {
     }
 
     
-    
+    /*
     public static void main(String[] args) {
         Chat c = new Chat("trux",new ChatListener() {
             @Override
@@ -158,12 +158,12 @@ public class Chat {
         });
         c.sendMessage("","hola");
     }
-    
+    */
 }
 
 interface ChatListener{
-    void messageReceived(String sender,String msg);
+    void messageReceived(String dest, String sender,String msg);
     void fileReceived(String sender,String file);
-    void clientConnected(String name);
+    void clientConnected(boolean response, String name);
     void clientDisconnected(String name);
 }

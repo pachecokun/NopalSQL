@@ -17,6 +17,8 @@ public class ChatWindow extends JFrame{
     HTMLEditorKit editorKit;
     JDialog privDialog;
     JButton privSend;
+    JScrollPane spMsg;
+    JScrollBar vertical;
     private final static String[][] EMOTICONS = {
         {"7n7", "7n7"},
         {"7u7", "7u7"},
@@ -55,27 +57,26 @@ public class ChatWindow extends JFrame{
     
     ChatListener chatListener = new ChatListener() {
         @Override
-        public void messageReceived(String sender, String msg) {
+        public void messageReceived(String dest, String sender, String msg) {
             String HTMLtxt;
             msg = showEmoticons(msg);
             if(sender.equals(username)){
-                HTMLtxt = "<p align=\"right\" style=\"font-family: sans-serif\">"
-                        + "<strong style=\"color: blue\">Yo: </strong>"
-                        + msg
-                        +"</p>";
+                HTMLtxt = "<p align=\"right\" style=\"font-family: sans-serif\">";
+                if(dest.length()==0)
+                    HTMLtxt += "<strong style=\"color: rgb(60, 150, 20)\">Yo: </strong>";
+                else
+                    HTMLtxt += "<strong style=\"color: rgb(160, 0, 160)\">[para "+dest+"] Yo: </strong>";
+                HTMLtxt += msg +"</p>";
             }
             else{
-                HTMLtxt = "<p style=\"font-family: sans-serif\">"
-                        + "<strong style=\"color: blue\">"+sender+": </strong>"
-                        + msg
-                        +"</p>";
+                HTMLtxt = "<p style=\"font-family: sans-serif\">";
+                if(dest.equals(username))
+                    HTMLtxt += "<strong style=\"color: rgb(150, 20, 60)\">[Privado] "+sender+": </strong>";
+                else
+                    HTMLtxt += "<strong style=\"color: rgb(20, 60, 150)\">"+sender+": </strong>";
+                HTMLtxt += msg + "</p>";
             }
-            try{
-                editorKit.insertHTML(d, d.getLength(), HTMLtxt, 0, 0, null);
-            }catch(Exception ex){
-                ex.printStackTrace();
-            }
-             
+            writeInChatbox(HTMLtxt);            
         }
 
         @Override
@@ -84,14 +85,12 @@ public class ChatWindow extends JFrame{
         }
 
         @Override
-        public void clientConnected(String name) {
+        public void clientConnected(boolean response, String name) {
             members.add(name);
             updateUserList();
-            String HTMLtxt = "<p align=\"center\" style=\"font-family: sans-serif\"><i>"+name+" ha entrado a la sala</i></p>";
-            try{
-                editorKit.insertHTML(d, d.getLength(), HTMLtxt, 0, 0, null);
-            }catch(Exception ex){
-                ex.printStackTrace();
+            if(!response){
+                String HTMLtxt = "<p align=\"center\" style=\"font-family: sans-serif\"><i>"+name+" ha entrado a la sala</i></p>";
+                writeInChatbox(HTMLtxt);
             }
         }
 
@@ -106,11 +105,7 @@ public class ChatWindow extends JFrame{
             }
             updateUserList();
             String HTMLtxt = "<p align=\"center\" style=\"font-family: sans-serif\"><i>"+name+" se ha ido</i></p>";
-            try{
-                editorKit.insertHTML(d, d.getLength(), HTMLtxt, 0, 0, null);
-            }catch(Exception ex){
-                ex.printStackTrace();
-            }
+            writeInChatbox(HTMLtxt);
         }
     };
     
@@ -185,7 +180,7 @@ public class ChatWindow extends JFrame{
         chatBox.setEditable(false);
             d = (HTMLDocument) chatBox.getDocument();
             editorKit = (HTMLEditorKit) chatBox.getEditorKit();
-        JScrollPane spMsg = new JScrollPane(chatBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        spMsg = new JScrollPane(chatBox, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         this.add(spMsg, BorderLayout.CENTER);
         
         //USERS LIST
@@ -198,7 +193,7 @@ public class ChatWindow extends JFrame{
             userContainer.add(spUser, BorderLayout.CENTER); 
         this.add(userContainer, BorderLayout.LINE_END);
         
-        //CHAR BAR
+        //CHAT BAR
         JPanel chatBar = new JPanel();
             inputMsg = new JTextField();
             inputMsg.setPreferredSize(new Dimension(200, 30));
@@ -252,7 +247,16 @@ public class ChatWindow extends JFrame{
                 }
             }
         }
-        System.out.println(s);
         return s;
+    }
+    
+    public void writeInChatbox(String txt){
+        try{
+            editorKit.insertHTML(d, d.getLength(), txt, 0, 0, null);
+            vertical = spMsg.getVerticalScrollBar();
+            vertical.setValue( spMsg.getVerticalScrollBar().getMaximum() );
+        }catch(Exception ex){
+            ex.printStackTrace();
+        }
     }
 }
