@@ -1,4 +1,6 @@
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,11 +30,14 @@ public class Chat {
     
     FileInputStream fis;
     FileOutputStream fos;
+    int npart = 0;
+    final int PART_SIZE = 200;
+    String file_sender = "";
+    String file_name = "";
     
     private void sendString(String dest,String type,String str){
         try{
             str = ""+dest+";;;"+name+";;;"+type+";;;"+str;
-            System.out.println("Enviando mensaje: "+str);
             byte[] buf = str.getBytes();
             DatagramPacket p = new DatagramPacket(buf, buf.length,group,6666);
             s.send(p);
@@ -52,8 +57,30 @@ public class Chat {
     
     public void sendFile(String dest,String file){
         try{
+            System.out.println("ENviando "+new File(file).getName());
             fis = new FileInputStream(file);
-            sendString(dest, "file", file);
+            sendString(dest, "file", new File(file).getName());
+            while(true){
+                ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
+                byte[] buffer = new byte[PART_SIZE];
+                int read = fis.read(buffer, PART_SIZE*npart,Math.min(fis.available(),PART_SIZE));
+                bos.write((byte)npart);//numero parte
+                bos.write((byte)read);//tamaño
+                bos.write((byte)(fis.available()==0?1:0));//final?
+                bos.write(buffer, 0, read);
+                sendString(dest, "file_part", new String(bos.toByteArray()));
+                if(fis.available()==0){
+                    break;
+                }
+            }
+            fis.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    private void sendFilePart(String dest,int npart){
+        try{
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -61,19 +88,41 @@ public class Chat {
     
     private void receiveFile(String sender, String file){
         try {
-            FileOutputStream fos = new FileOutputStream(file);
+            fos = new FileOutputStream("/home/david/received/"+file);
+            file_sender = sender;
+            file_name = file;
         } catch (FileNotFoundException ex) {
             Logger.getLogger(Chat.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    private void receiveFilePart(String data){
+        try{
+            byte[] bytes = data.getBytes();
+            int npart = bytes[0]& (0xff);
+            int size = bytes[1]& (0xff);
+            int is_final = bytes[4]& (0xff);
+            System.out.println(npart+": "+size+" bytes"+" final: "+is_final);
+            fos.write(bytes, 5, size);
+            if(is_final==1){
+                fos.close();
+                listener.fileReceived(file_sender,file_name);
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        
+    }
         
     private void handleMessage(String msg){
-        String[] parts = msg.split(";;;");
+        //System.out.println("Mensaje recibido: "+msg);
+        String[] parts = msg.split(";;;",4);
         String dest = parts[0];
         String sender = parts[1];
         if(dest.length()==0||dest.equals(name)||sender.equals(name)){
             String type = parts[2];
             String data = parts[3];
+            //System.out.println("Mensaje["+type+"] recibido de "+sender+": "+data);
             if(type.equals("handshake") && !sender.equals(name)){
                 boolean resp = dest.length()!=0;
                 listener.clientConnected(resp, sender);
@@ -88,9 +137,11 @@ public class Chat {
                 listener.clientDisconnected(sender);
             }
             else if(type.equals("file") && !sender.equals(name)){
-                receiveFile(sender,  data);
+                receiveFile(sender,  data.trim());
             }
-            //System.out.println("Mensaje["+type+"] recibido de "+sender+": "+data);
+            else if(type.equals("file_part") && !sender.equals(name)){
+                receiveFilePart(data);
+            }
         }
     }
     

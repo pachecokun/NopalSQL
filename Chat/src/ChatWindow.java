@@ -85,7 +85,7 @@ public class ChatWindow extends JFrame{
 
         @Override
         public void fileReceived(String sender, String file) {
-            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+            System.out.println("archivo recibido. "+sender+" . "+file);
         }
 
         @Override
@@ -235,7 +235,16 @@ public class ChatWindow extends JFrame{
                 chatBar.add(enviar);
             JButton adjuntar = new JButton("Adjuntar");
                 adjuntar.setActionCommand("adj");
-                adjuntar.addActionListener(attachListener);
+                adjuntar.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        JFileChooser jfc = new JFileChooser();
+                        int resp = jfc.showOpenDialog(null);
+                        if(resp == jfc.APPROVE_OPTION){
+                            c.sendFile("", jfc.getSelectedFile().getAbsolutePath());
+                        }
+                    }
+                });
                 chatBar.add(adjuntar);    
         this.add(chatBar, BorderLayout.PAGE_END);        
         
