@@ -1,6 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.event.*;
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
 import java.util.ArrayList;
@@ -66,7 +70,7 @@ public class ChatWindow extends JFrame{
                     HTMLtxt += "<strong style=\"color: rgb(60, 150, 20)\">Yo: </strong>";
                 else
                     HTMLtxt += "<strong style=\"color: rgb(160, 0, 160)\">[para "+dest+"] Yo: </strong>";
-                HTMLtxt += msg +"</p>";
+                HTMLtxt += msg +" <a href=\"\">Abrir arch ejemplo</a></p>";
             }
             else{
                 HTMLtxt = "<p style=\"font-family: sans-serif\">";
@@ -118,6 +122,18 @@ public class ChatWindow extends JFrame{
        }
     };
     
+    ActionListener attachListener = new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            try{
+                Path current = Paths.get("");
+                Desktop.getDesktop().open(new File(current.toAbsolutePath().toString()));
+            }catch(Exception ex){
+                ex.printStackTrace();
+            }
+        }
+    };
+    
     ActionListener sendListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -143,6 +159,20 @@ public class ChatWindow extends JFrame{
                 }
             }
             
+        }
+    };
+    
+    HyperlinkListener explorerListener = new HyperlinkListener() {
+        @Override
+        public void hyperlinkUpdate(HyperlinkEvent e) {
+            if(e.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+                try{
+                    Path current = Paths.get("");
+                    Desktop.getDesktop().open(new File(current.toAbsolutePath().toString()));
+                }catch(Exception ex){
+                    ex.printStackTrace();
+                }
+            }
         }
     };
     
@@ -177,6 +207,7 @@ public class ChatWindow extends JFrame{
         //CHATBOX
         chatBox = new JTextPane();
         chatBox.setContentType("text/html");
+        chatBox.addHyperlinkListener(explorerListener);
         chatBox.setEditable(false);
             d = (HTMLDocument) chatBox.getDocument();
             editorKit = (HTMLEditorKit) chatBox.getEditorKit();
@@ -204,7 +235,7 @@ public class ChatWindow extends JFrame{
                 chatBar.add(enviar);
             JButton adjuntar = new JButton("Adjuntar");
                 adjuntar.setActionCommand("adj");
-                adjuntar.addActionListener(null);
+                adjuntar.addActionListener(attachListener);
                 chatBar.add(adjuntar);    
         this.add(chatBar, BorderLayout.PAGE_END);        
         
