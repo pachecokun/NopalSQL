@@ -88,7 +88,7 @@ public class Chat {
     
     private void receiveFile(String sender, String file){
         try {
-            fos = new FileOutputStream("/home/david/received/"+file);
+            fos = new FileOutputStream(file);
             file_sender = sender;
             file_name = file;
         } catch (FileNotFoundException ex) {
