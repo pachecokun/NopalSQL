@@ -1,4 +1,5 @@
 
+import com.sun.org.apache.xerces.internal.impl.dv.util.Base64;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -31,7 +32,7 @@ public class Chat {
     FileInputStream fis;
     FileOutputStream fos;
     int npart = 0;
-    final int PART_SIZE = 200;
+    final int PART_SIZE = 4096;
     String file_sender = "";
     String file_name = "";
     
@@ -40,6 +41,15 @@ public class Chat {
             str = ""+dest+";;;"+name+";;;"+type+";;;"+str;
             byte[] buf = str.getBytes();
             DatagramPacket p = new DatagramPacket(buf, buf.length,group,6666);
+            s.send(p);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    private void sendData(byte[] data){
+        try{
+            DatagramPacket p = new DatagramPacket(data, data.length,group,6666);
             s.send(p);
         }catch(Exception e){
             e.printStackTrace();
@@ -64,14 +74,21 @@ public class Chat {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream(1024);
                 byte[] buffer = new byte[PART_SIZE];
                 int read = fis.read(buffer, PART_SIZE*npart,Math.min(fis.available(),PART_SIZE));
+                bos.write(0);//tipo msg
+                bos.write(0);//tipo msg
                 bos.write((byte)npart);//numero parte
-                bos.write((byte)read);//tamaño
+                bos.write((read>>0)&0xFF);//tamaño
+                bos.write((read>>8)&0xFF);//tamaño
+                bos.write((read>>16)&0xFF);//tamaño
+                bos.write((read>>24)&0xFF);//tamaño
                 bos.write((byte)(fis.available()==0?1:0));//final?
                 bos.write(buffer, 0, read);
-                sendString(dest, "file_part", new String(bos.toByteArray()));
+                byte[] bytes = bos.toByteArray();
+                sendData(bytes);
                 if(fis.available()==0){
                     break;
                 }
+                Thread.sleep(5);
             }
             fis.close();
         }catch(Exception e){
@@ -96,17 +113,23 @@ public class Chat {
         }
     }
     
-    private void receiveFilePart(String data){
+    private void receiveFilePart(byte[] data){
         try{
-            byte[] bytes = data.getBytes();
-            int npart = bytes[0]& (0xff);
-            int size = bytes[1]& (0xff);
-            int is_final = bytes[4]& (0xff);
-            System.out.println(npart+": "+size+" bytes"+" final: "+is_final);
-            fos.write(bytes, 5, size);
-            if(is_final==1){
-                fos.close();
-                listener.fileReceived(file_sender,file_name);
+            if(fos!=null){
+                int npart = data[2]& (0xff);
+                int size = 
+                        ((data[3]&0xff)<<0)|
+                        ((data[4]&0xff)<<8)|
+                        ((data[5]&0xff)<<16)|
+                        ((data[6]&0xff)<<24);
+                int is_final = data[7]& (0xff);
+                System.out.println(npart+": "+size+" bytes"+" final: "+is_final);
+                fos.write(data, 8, size);
+                if(is_final==1){
+                    fos.close();
+                    fos= null;
+                    listener.fileReceived(file_sender,file_name);
+                }
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -139,9 +162,6 @@ public class Chat {
             else if(type.equals("file") && !sender.equals(name)){
                 receiveFile(sender,  data.trim());
             }
-            else if(type.equals("file_part") && !sender.equals(name)){
-                receiveFilePart(data);
-            }
         }
     }
     
@@ -161,10 +181,15 @@ public class Chat {
                 public void run() {
                     try{
                         while(true){
-                            byte[] buffer = new byte[500];
+                            byte[] buffer = new byte[5000];
                             DatagramPacket p = new DatagramPacket(buffer,buffer.length);
                             s.receive(p);
-                            handleMessage(new String(buffer));
+                            if(buffer[0]!=0){
+                                handleMessage(new String(buffer));
+                            }
+                            else{
+                                receiveFilePart(buffer);
+                            }
                         }
                     }catch(Exception e){
                         e.printStackTrace();

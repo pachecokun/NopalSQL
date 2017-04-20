@@ -85,6 +85,10 @@ public class ChatWindow extends JFrame{
 
         @Override
         public void fileReceived(String sender, String file) {
+            String HTMLtxt = "<p style=\"font-family: sans-serif\">";
+                HTMLtxt += "<strong style=\"color: rgb(150, 20, 60)\">"+sender+": </strong>";
+            HTMLtxt += "Archivo recibido: <a href=\"file://"+file+"\">"+file+"</a></p>";
+            writeInChatbox(HTMLtxt);          
             System.out.println("archivo recibido. "+sender+" . "+file);
         }
 
