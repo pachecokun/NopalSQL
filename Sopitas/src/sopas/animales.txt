@@ -1,0 +1,11 @@
+10,10
+<h1>Animales</h1>
+<p>Muchos animales</p>
+--
+perro
+gato
+venado
+rata
+vaca
+burro
+gallina
