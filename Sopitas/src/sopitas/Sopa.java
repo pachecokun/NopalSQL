@@ -7,18 +7,22 @@ package sopitas;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
  *
  * @author david
  */
-public class Sopa {
+public class Sopa implements Serializable{
     Cell[][] letters;
     String hints;
     int w,h;
     ArrayList<Word> words = new ArrayList<>();
-    int[] start;
+    ArrayList<Player> players = new ArrayList<>();
+    Player winner = null;
+    
+    int time = 60;
     
     public Sopa(String[] words,String hints,int w,int h){
         this.w = w;
@@ -74,6 +78,7 @@ public class Sopa {
     }
     
     private void fill(){
+        System.out.println("sopitas.Sopa.fill()");
         for(int i=0;i<w;i++){
             for(int j=0;j<h;j++){
                 if(letters[i][j]==null){
@@ -96,31 +101,28 @@ public class Sopa {
         return letters[i][j];
     }
     
-    public void selectCell(int i,int j){
-        if(start==null){
-            start = new int[]{i,j};
-            letters[i][j].selected = true;
-            System.out.println("start: "+i+","+j);
-        }
-        else{
-            for(Word word:words){
-                if(
-                        !word.discovered&&
-                        word.x==start[0]&&
-                        word.y==start[1]&&
-                        word.x1==i&&
-                        word.y1==j
-                ){
-                    word.discovered = true;
-                    for(int i1 = 0,px = word.x,py=word.y;i1<word.l;i1++,px+=word.dx,py+=word.dy){
-                        letters[px][py].discovered = true;
-                    }
-                    System.out.println("Palabra descubierta: "+word.word);
-                    break;
+    public void discoverWord(String player,int i1,int j1,int i2,int j2){
+        for(Word word:words){
+            if(
+                    !word.discovered&&
+                    word.x==i1&&
+                    word.y==j1&&
+                    word.x1==i2&&
+                    word.y1==j2
+            ){
+                word.discovered = true;
+                for(int i = 0,px = word.x,py=word.y;i<word.l;i++,px+=word.dx,py+=word.dy){
+                    letters[px][py].discovered = true;
                 }
+                for(Player p:players){
+                    if(p.name.equals(player)){
+                        p.score++;
+                        break;
+                    }
+                }
+                System.out.println("Palabra descubierta: "+word.word);
+                break;
             }
-            letters[start[0]][start[1]].selected = false;
-            start = null;
         }
     }
     
@@ -154,8 +156,12 @@ public class Sopa {
         }
         return null;
     }
+    
+    public void addPlayer(String p){
+        players.add(new Player(p));
+    }
 }
-class Cell{
+class Cell implements Serializable{
     boolean discovered=false;
     boolean selected=false;
     char c;
@@ -165,7 +171,7 @@ class Cell{
     }
     
 }
-class Word{
+class Word implements Serializable{
     String word;
     int x,y,dx,dy,l,x1,y1;
     boolean discovered = false;

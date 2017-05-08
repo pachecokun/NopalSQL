@@ -5,14 +5,18 @@
  */
 package sopitas;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 
 /**
  *
  * @author david
  */
-public class Player {
+public class Player  implements Serializable{
     String name;
-    ArrayList<String> found = new ArrayList<>();
-    
+    int score = 0;
+    int longest = 0;
+
+    public Player(String name) {
+        this.name = name;
+    }
 }

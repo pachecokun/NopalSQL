@@ -20,28 +20,38 @@ import javax.swing.JPanel;
  */
 public class Sopitas extends JFrame{
 
-    Sopa s;
     SopaPanel sp;
+    String player;
+    int[][] start = null;
+    JLabel lbl_game;
     
-    public Sopitas(Sopa s){
+    
+    public Sopitas(Sopa s,String player,DiscoverListener listener){
         super("Sopitas");
+        this.player = player;
+        
         setSize(700,500);
         setLayout(null);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
         
-        sp = new SopaPanel(s,10, 10, 450, 450);
+        sp = new SopaPanel(s,player,listener,10, 10, 450, 450);
                 
         JLabel l = new JLabel(s.hints);
         l.setVerticalAlignment(l.NORTH);
-        l.setBounds(500,10,250,450);
+        l.setBounds(500,10,250,200);
         add(l);
+        
+        lbl_game = new JLabel();
+        lbl_game.setVerticalAlignment(l.NORTH);
+        lbl_game.setBounds(500, 250, 250, 200);
+        add(lbl_game);
         
         add(sp);
         
-        this.s = s;
         repaint();
+        updateInfo(s);
     }
 
     /**
@@ -49,7 +59,28 @@ public class Sopitas extends JFrame{
      */
     public static void main(String[] args) {
         
-        new Sopitas(Sopa.read("../sopas/ciudades.txt"));
+        Sopa s = Sopa.read("../sopas/animales.txt");
+        
+        s.addPlayer("David");
+        
+        new Sopitas(s,"David",null);
+    }
+    
+    public void update(Sopa s){
+        sp.updateGame(s);
+        updateInfo(s);
+    }
+    
+    void updateInfo(Sopa s){
+        String text = "<html>";
+        
+        text += "Tiempo restante: "+s.time+"<br><br>";
+        
+        for(Player p:s.players){
+            text+=p.name+": "+p.score+"/"+p.longest+"<br>";
+        }
+        text += "</html>";
+        lbl_game.setText(text);
     }
     
 }
@@ -57,9 +88,18 @@ class SopaPanel extends JPanel{
     Sopa s;
     int w_cell,h_cell;
     int[] start = null;
-
-    public SopaPanel(Sopa s,int x,int y,int w,int h) {
+    String player;
+    DiscoverListener listener;
+    
+    public void updateGame(Sopa s){
         this.s = s;
+        repaint();
+    }
+
+    public SopaPanel(Sopa s,String player,DiscoverListener listener,int x,int y,int w,int h) {
+        this.s = s;
+        this.player = player;
+        this.listener = listener;
         setBounds(x, y, w, h);
         this.w_cell = (int)((getWidth())/s.getW());
         this.h_cell = (int)((getHeight())/s.getH());
@@ -68,8 +108,16 @@ class SopaPanel extends JPanel{
             
             @Override
             public void mouseClicked(MouseEvent e) {
-                System.out.println(e.getX()/w_cell+","+e.getY()/h_cell);
-                s.selectCell(e.getX()/w_cell, e.getY()/h_cell);
+                int i = e.getX()/w_cell;
+                int j = e.getY()/h_cell;
+                
+                if(start==null){
+                    start = new int[]{i,j};
+                }
+                else{
+                    listener.discoverWord(player, start[0], start[1], i, j);
+                    start = null;
+                }
                 repaint();
             }
          
@@ -86,10 +134,10 @@ class SopaPanel extends JPanel{
         g.setFont(new Font("Consolas", Font.PLAIN, h_cell-10));
         g.drawRect(0, 0, getWidth()-1, getHeight()-1);
         for(int i=0;i<s.getW();i++){
-            for(int j=0;j<s.getW();j++){
+            for(int j=0;j<s.getH();j++){
                 Cell c = s.getLetter(i, j);
                 Color bg;
-                if(c.selected){
+                if(c.selected||(start!=null&&i==start[0]&&j==start[1])){
                     bg = Color.YELLOW;
                 }
                 else if(c.discovered){
@@ -106,4 +154,7 @@ class SopaPanel extends JPanel{
             }   
         }
     }
+}
+interface DiscoverListener{
+    void discoverWord(String player,int i1,int j1,int i2,int j2);
 }

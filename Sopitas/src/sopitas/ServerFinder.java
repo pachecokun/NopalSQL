@@ -92,38 +92,3 @@ public class ServerFinder {
         new ServerFinder();
     }
 }
-
-class Server{
-    String address;
-    int port;
-    int available;
-
-    public Server(String address, int port, int available) {
-        this.address = address;
-        this.port = port;
-        this.available = available;
-    }    
-
-    public void setAvailable(int available) {
-        this.available = available;
-    }
-    
-    public static Server parseServer(String s){
-        String[] data = s.split(";;;");
-                        
-        String ip = data[0];
-        int port = Integer.parseInt(data[1]);
-        int available = Integer.parseInt(data[2]);
-        
-        return new Server(ip, port, available);
-    }
-
-    @Override
-    public String toString() {
-        return address+":"+port+"("+available+" lugares)";
-    }
-    
-    public String sendString(){
-        return address+";;;"+port+";;;"+available;
-    }
-}
