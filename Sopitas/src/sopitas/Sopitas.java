@@ -12,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 /**
@@ -52,6 +53,7 @@ public class Sopitas extends JFrame{
         
         repaint();
         updateInfo(s);
+        setVisible(true);
     }
 
     /**
@@ -69,6 +71,7 @@ public class Sopitas extends JFrame{
     public void update(Sopa s){
         sp.updateGame(s);
         updateInfo(s);
+        System.out.println("Juego actualizado (Tiempo restante: "+s.time+")");
     }
     
     void updateInfo(Sopa s){
@@ -81,6 +84,13 @@ public class Sopitas extends JFrame{
         }
         text += "</html>";
         lbl_game.setText(text);
+        if(s.end){
+            String winner = "Empate";
+            if(s.winner!=null){
+                winner = s.winner.name;
+            }
+            JOptionPane.showMessageDialog(null, "Ganador: "+winner);
+        }
     }
     
 }

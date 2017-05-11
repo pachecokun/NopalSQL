@@ -19,4 +19,10 @@ public class Player  implements Serializable{
     public Player(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+    
 }

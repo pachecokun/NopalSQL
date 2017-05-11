@@ -21,6 +21,7 @@ public class Sopa implements Serializable{
     ArrayList<Word> words = new ArrayList<>();
     ArrayList<Player> players = new ArrayList<>();
     Player winner = null;
+    boolean end = false;
     
     int time = 60;
     
@@ -78,7 +79,6 @@ public class Sopa implements Serializable{
     }
     
     private void fill(){
-        System.out.println("sopitas.Sopa.fill()");
         for(int i=0;i<w;i++){
             for(int j=0;j<h;j++){
                 if(letters[i][j]==null){
@@ -86,6 +86,49 @@ public class Sopa implements Serializable{
                     letters[i][j] = new Cell(' ');
                 }
             }    
+        }
+    }
+    
+    void checkEnd(){
+        int remaining =  0;
+        for(Word w:words){
+            if(!w.discovered){
+                remaining++;
+            }
+        }
+        if(time==0||remaining==0){
+            end = true;
+            
+            int max_score = -1;
+            for(Player p:players){
+                if(p.score>max_score){
+                    max_score = p.score;
+                    winner = p;
+                }
+                else if(p.score == max_score){
+                    winner = null;
+                }
+            }
+            if(winner == null){
+                int max_l = -1;
+                for(Player p:players){
+                    if(p.longest>max_l){
+                        max_l = p.longest;
+                        winner = p;
+                    }
+                    else if(p.longest == max_l){
+                        winner = null;
+                    }
+                }
+            }
+            System.out.println("Ganador: "+winner);
+        }
+    }
+    
+    public void advanceTime(){
+        if(!end){
+            time--;
+            checkEnd();
         }
     }
 
@@ -117,10 +160,14 @@ public class Sopa implements Serializable{
                 for(Player p:players){
                     if(p.name.equals(player)){
                         p.score++;
+                        if(p.longest<word.l){
+                            p.longest = word.l;
+                        }
                         break;
                     }
                 }
                 System.out.println("Palabra descubierta: "+word.word);
+                checkEnd();
                 break;
             }
         }

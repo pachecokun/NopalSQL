@@ -5,14 +5,17 @@
  */
 package sopitas;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.Serializable;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.swing.Timer;
 
 /**
  *
@@ -22,6 +25,12 @@ class Server{
     String address;
     int port;
     int available;
+    
+    volatile Sopa game = null;
+    volatile ArrayList<ObjectOutputStream> oos = new ArrayList<>();
+    
+    ExecutorService executor = Executors.newFixedThreadPool(5);
+    
 
     public static void main(String[] args) {
         new Server("localhost", 8181, 5);
@@ -32,20 +41,46 @@ class Server{
             this.address = address;
             this.port = port;
             this.available = available;
-            ExecutorService executor = Executors.newFixedThreadPool(5);//creating a pool of 5 threads  
             
             ServerSocket ss = new ServerSocket(port);
             
             while(available>0) {
                 Socket s = ss.accept();
-                s.setTcpNoDelay(true);
-                executor.execute(new PlayerHandler(s,available==5));
+                System.out.println("Cliente conectado");
+                addClient(s);
+                while(game==null);
                 available--;
             }  
         }catch(Exception e){
             e.printStackTrace();
         }
     }    
+    
+    void addClient(Socket s){
+        try{
+            executor.execute(new PlayerHandler(s));
+            ObjectOutputStream os = new ObjectOutputStream(s.getOutputStream());
+            os.writeBoolean(game==null);
+            os.flush();
+            System.out.println("Juego nuevo? "+(game==null));
+            oos.add(os);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    
+    void sendGame(){
+        try{
+            for(ObjectOutputStream os:oos){
+                os.writeObject(game);
+                os.flush();
+                os.reset();
+            }
+            System.out.println("Juego actualizado "+game.time);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 
     public void setAvailable(int available) {
         this.available = available;
@@ -69,33 +104,61 @@ class Server{
     public String sendString(){
         return address+";;;"+port+";;;"+available;
     }
-}
-class PlayerHandler implements Runnable{
+    class PlayerHandler implements Runnable{
 
-    Socket s;
-    boolean first;
-    PrintWriter pw;
-    BufferedReader br;
-    Sopa game = null;   
+        Socket s;
+        ObjectOutputStream oos;
+        BufferedReader br;
 
-    public PlayerHandler(Socket s,boolean first) {
-        this.s = s;
-        this.first = first;
-    }    
-    
-    @Override
-    public void run() {
-        try {
-            br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-            pw = new PrintWriter(s.getOutputStream());
-            
-        } catch (Exception e) {
-            e.printStackTrace();
+        public PlayerHandler(Socket s) {
+            this.s = s;
+        }    
+
+        @Override
+        public void run() {
+            try {
+                br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+                String msg;
+                
+                while(true){
+                    msg = br.readLine();
+                    
+                    System.out.println("Mensaje recibido: "+msg);
+                    
+                    String[] tokens = msg.split(" ");
+                    
+                    if(tokens[0].equals("level")){
+                        game = Sopa.read("../sopas/"+tokens[1]+".txt");
+                        new Timer(1000, new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                if(!game.end){
+                                    game.advanceTime();
+                                    sendGame();
+                                }
+                            }
+                        }).start();
+                    }
+                    else if(tokens[0].equals("discover")){
+                        game.discoverWord(
+                                tokens[1],
+                                Integer.parseInt(tokens[2]),
+                                Integer.parseInt(tokens[3]),
+                                Integer.parseInt(tokens[4]),
+                                Integer.parseInt(tokens[5])
+                        );
+                        sendGame();
+                    }
+                    else if(tokens[0].equals("player")){
+                        game.addPlayer(tokens[1]);
+                        sendGame();
+                    }
+                }
+
+                
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
-    
-    void sendGame(){
-        
-    }
-
 }
