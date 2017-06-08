@@ -7,14 +7,15 @@ package proyecto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
  * @author david
  */
 public class Juego implements Serializable{
-    ArrayList<Player> players = new ArrayList<>();
-    ArrayList<Player> enemies = new ArrayList<>();
+    CopyOnWriteArrayList<Player> players = new CopyOnWriteArrayList<>();
+    CopyOnWriteArrayList<Player> enemies = new CopyOnWriteArrayList<>();
     float speed = -100;
     float accel = -10;
     float pb = 0;
