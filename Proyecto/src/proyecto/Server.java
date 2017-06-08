@@ -39,7 +39,7 @@ public class Server {
     public void updateServer(){
         try {
             ServerInfo info = new ServerInfo(name, InetAddress.getLocalHost().getHostAddress() , nplayers);
-            
+            System.out.println(InetAddress.getLocalHost().getHostAddress());
             byte[] buf = info.getString().getBytes();
             MulticastSocket socket = new MulticastSocket();
             InetAddress group = InetAddress.getByName("224.0.0.0");

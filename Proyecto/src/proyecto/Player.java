@@ -9,7 +9,7 @@ import java.awt.Rectangle;
 import java.io.Serializable;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  *
@@ -42,7 +42,7 @@ public class Player implements Serializable{
         py = min(max(0,py+dt*vy),maxy-H);
     }
     
-    public void detect(ArrayList<Player> enemies){
+    public void detect(CopyOnWriteArrayList<Player> enemies){
         if(crashed){
             return;
         }
