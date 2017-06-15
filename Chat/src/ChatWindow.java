@@ -70,7 +70,7 @@ public class ChatWindow extends JFrame{
                     HTMLtxt += "<strong style=\"color: rgb(60, 150, 20)\">Yo: </strong>";
                 else
                     HTMLtxt += "<strong style=\"color: rgb(160, 0, 160)\">[para "+dest+"] Yo: </strong>";
-                HTMLtxt += msg +" <a href=\"\">Abrir arch ejemplo</a></p>";
+                HTMLtxt += msg +"</p>";
             }
             else{
                 HTMLtxt = "<p style=\"font-family: sans-serif\">";
