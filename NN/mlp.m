@@ -64,15 +64,15 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     
     for i = 1:n_data
        aux = rem(i,20);
-       if aux<14
-          training(end+1) = input(i); 
-          t_training(end+1) = target(i); 
-       elseif aux<17
+       if rem(aux,7)==0
+          test(end+1) = input(i); 
+          t_test(end+1) = target(i); 
+       elseif rem(aux,7)==1
           validation(end+1) = input(i);
           t_validation(end+1) = target(i); 
        else
-          test(end+1) = input(i); 
-          t_test(end+1) = target(i); 
+          training(end+1) = input(i); 
+          t_training(end+1) = target(i); 
        end
     end
     
