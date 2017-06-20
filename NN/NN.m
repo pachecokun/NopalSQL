@@ -22,7 +22,7 @@ function varargout = NN(varargin)
 
 % Edit the above text to modify the response to help NN
 
-% Last Modified by GUIDE v2.5 19-Jun-2017 21:07:00
+% Last Modified by GUIDE v2.5 19-Jun-2017 21:58:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -345,4 +345,3 @@ eEval =  str2num(get(handles.txteEval, 'String'));
 itVal =  str2num(get(handles.txtitVal, 'String'));
 numVal = str2num(get(handles.txtNumVal, 'String'));
 mlp(archVector, functionVector, testValues, targetValues, learningRate, itMax,eEval,itVal,numVal);
-
