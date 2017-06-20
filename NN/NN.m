@@ -345,3 +345,16 @@ eEval =  str2num(get(handles.txteEval, 'String'));
 itVal =  str2num(get(handles.txtitVal, 'String'));
 numVal = str2num(get(handles.txtNumVal, 'String'));
 mlp(archVector, functionVector, testValues, targetValues, learningRate, itMax,eEval,itVal,numVal);
+
+
+%------------plots test values------------------------    
+test = load('test.txt');
+
+p = test(:,1);
+t = test(:,2);
+a = test(:,3);
+figure();
+hold on;
+scatter(p,t,'red','filled');
+scatter(p,a,'blue','filled');
+legend('target','a');
