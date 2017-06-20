@@ -80,7 +80,7 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     n_validation = size(validation,2);
     n_test = size(test,2);
     
-    c_weights = cell(1,1);
+    c_weights = {};
     c_bias = cell(1,1);
     
     weights = {};
@@ -102,7 +102,6 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     %iteraciones
     
     for it = 1:itmax
-        
         
         if finished
            break
@@ -164,13 +163,13 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
                    
                    write_matrix(f_weights,weights{m});
                    write_matrix(f_bias,bias{m});
-                   prop = prop + 1;
                 end
+                prop = prop + 1;
                 fprintf(f_weights,'\n');
                 fprintf(f_bias,'\n');
                 
             end
-            fprintf(f_eent,'%f',eent);
+            fprintf(f_eent,'%f ',[it eent]);
             fprintf(f_eent,'\n');
             
             fprintf('eent: %f\n',eent);
@@ -193,7 +192,7 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
                 
                 e_val = e_val +e.^2;
             end
-            fprintf(f_eval,'%f',eent);
+            fprintf(f_eval,'%f ',[it e_val]);
             fprintf(f_eval,'\n');
             
             
@@ -231,13 +230,14 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
         ep = ep +e.^2;
         
     end
-    fprintf(f_etest,'%f',eent);
+    fprintf(f_etest,'%f ',eent);
     fprintf(f_etest,'\n');
     
     fprintf('ep: %f\n',ep);
     
     %cerramos archivos    
     fclose('all');
+    disp(c_weights);
     save('data.mat','c_weights','c_bias');
 end 
 

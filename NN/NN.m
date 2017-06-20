@@ -355,3 +355,26 @@ end
 
 
 
+
+%------------plots test values------------------------    
+test = load('test.txt');
+
+p = test(:,1);
+t = test(:,2);
+a = test(:,3);
+figure();
+hold on;
+scatter(p,t,'red','filled');
+scatter(p,a,'blue','filled');
+legend('target','a');
+
+
+%-----------------plot errors-----------------
+eent = load('eent.txt');
+eval = load('eval.txt');
+
+figure();
+hold on;
+scatter(eent(:,1),eent(:,2),'red','filled');
+scatter(eval(:,1),eval(:,2),'blue','filled');
+legend('eent','eval');
