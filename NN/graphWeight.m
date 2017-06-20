@@ -22,6 +22,5 @@ function graphWeight(cells, numCapa)
     title(strcat('Evolucion de pesos de capa ',numCapa));
     xlabel('k');
     ylabel('W');    
-    legend(legendsW);
-    disp(counter);
+    legend(legendsW);    
 end

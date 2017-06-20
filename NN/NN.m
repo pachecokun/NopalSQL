@@ -346,8 +346,8 @@ mlp(archVector, functionVector, testValues, targetValues, learningRate, itMax,eE
 cells = matfile('data.mat');
 cellWeights = cells.c_weights;
 numCapas = size(cellWeights,2);
-figure;
 for i=1:numCapas
+    figure;
     graphWeight(cellWeights(:,i),int2str(i));
 end
 
