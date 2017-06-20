@@ -38,7 +38,7 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     f_etest = fopen('etest.txt','w+');
     f_weights = fopen('weights.txt','w+');
     f_bias = fopen('bias.txt','w+');
-    f_output = fopen('output.txt','w+');
+    f_test = fopen('test.txt','w+');
     
     
     
@@ -221,6 +221,12 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
         p = test(n);
         t = t_test(n);
         e = propagate(p,t);
+        
+        aux = t-e;
+        
+        fprintf(f_test,'%f ',[p t aux]);
+        fprintf(f_test,'\n');
+        
 
         ep = ep +e.^2;
         
