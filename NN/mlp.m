@@ -238,10 +238,9 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     
     %cerramos archivos    
     fclose('all');
-end
-save('data.mat','c_weights','c_bias');
-    
-end
+    save('data.mat','c_weights','c_bias');
+end 
+
 function graphWeight(cells, numCapa)
     figure;
     hold on;

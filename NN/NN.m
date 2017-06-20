@@ -345,3 +345,4 @@ eEval =  str2num(get(handles.txteEval, 'String'));
 itVal =  str2num(get(handles.txtitVal, 'String'));
 numVal = str2num(get(handles.txtNumVal, 'String'));
 mlp(archVector, functionVector, testValues, targetValues, learningRate, itMax,eEval,itVal,numVal);
+
