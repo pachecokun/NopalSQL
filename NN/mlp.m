@@ -236,8 +236,7 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     fprintf('ep: %f\n',ep);
     
     %cerramos archivos    
-    fclose('all');
-    disp(c_weights);
+    fclose('all');    
     save('data.mat','c_weights','c_bias');
 end 
 

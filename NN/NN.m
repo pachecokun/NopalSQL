@@ -345,10 +345,13 @@ numVal = str2num(get(handles.txtNumVal, 'String'));
 mlp(archVector, functionVector, testValues, targetValues, learningRate, itMax,eEval,itVal,numVal);
 cells = matfile('data.mat');
 cellWeights = cells.c_weights;
+cellBiases = cells.c_bias;
 numCapas = size(cellWeights,2);
 for i=1:numCapas
     figure;
     graphWeight(cellWeights(:,i),int2str(i));
+    figure;
+    graphBiases(cellBiases(:,i), int2str(i));
 end
 
 
