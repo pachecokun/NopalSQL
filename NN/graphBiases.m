@@ -4,8 +4,7 @@ function graphBiases(cells, numCapa)
     numMatrices = size(cells,1);
     [S R] = size(cell2mat(cells(1)));
     j = 1;   
-    totalW = S*R;    
-    disp(totalW);
+    totalW = S*R;        
     legendsW = cell(1,totalW);
     for c = 1: totalW        
         legendsW{j} = strcat('b',int2str(c)); 

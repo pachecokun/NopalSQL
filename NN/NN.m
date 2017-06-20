@@ -367,8 +367,8 @@ t = test(:,2);
 a = test(:,3);
 figure();
 hold on;
-scatter(p,t,'red','filled');
-scatter(p,a,'blue','filled');
+plot(p,t,'o');
+scatter(p,a,'x');
 legend('target','a');
 
 
