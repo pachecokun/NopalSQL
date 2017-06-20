@@ -38,7 +38,7 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     f_etest = fopen('etest.txt','w+');
     f_weights = fopen('weights.txt','w+');
     f_bias = fopen('bias.txt','w+');
-    f_output = fopen('output.txt','w+');
+    f_test = fopen('test.txt','w+');
     
     
     
@@ -47,13 +47,11 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     
     M = size(layers,2)-1;
     n_data = size(input,2);
-    p_training = 0;
     max_eent = eent;
     max_numval = numval;
     numval = 0;
     finished = false;
-    
-    
+    prop = 1;
     
     %obtenemos conjuntos de datos
     
@@ -82,6 +80,8 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     n_validation = size(validation,2);
     n_test = size(test,2);
     
+    c_weights = cell(1,1);
+    c_bias = cell(1,1);
     
     weights = {};
     bias ={};
@@ -143,8 +143,6 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
                         end
                     end
                     
-                    disp(F{m});
-                    
                 end
 
                 %prop hacia atras
@@ -161,14 +159,18 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
                    weights{m} = weights{m} -alpha*s{m}*a{m}';
                    bias{m} = bias{m} -alpha*s{m}; 
                    
+                   c_weights{prop,m} = weights{m};
+                   c_bias{prop,m} = bias{m};
+                   
                    write_matrix(f_weights,weights{m});
                    write_matrix(f_bias,bias{m});
+                   prop = prop + 1;
                 end
                 fprintf(f_weights,'\n');
                 fprintf(f_bias,'\n');
                 
             end
-            fprintf(f_eent,'%f,',eent);
+            fprintf(f_eent,'%f',eent);
             fprintf(f_eent,'\n');
             
             fprintf('eent: %f\n',eent);
@@ -191,11 +193,11 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
                 
                 e_val = e_val +e.^2;
             end
-            fprintf(f_eval,'%f,',eent);
+            fprintf(f_eval,'%f',eent);
             fprintf(f_eval,'\n');
             
             
-            if exist('evalant')~=0 && evalant < e_val
+            if exist('evalant')~=0 && (evalant < e_val || isnan(e_val))
                 numval = numval+1;
             else
                 numval = 0;
@@ -219,20 +221,27 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
         p = test(n);
         t = t_test(n);
         e = propagate(p,t);
+        
+        aux = t-e;
+        
+        fprintf(f_test,'%f ',[p t aux]);
+        fprintf(f_test,'\n');
+        
 
         ep = ep +e.^2;
         
     end
-    fprintf(f_etest,'%f,',eent);
+    fprintf(f_etest,'%f',eent);
     fprintf(f_etest,'\n');
     
     fprintf('ep: %f\n',ep);
     
     %cerramos archivos    
     fclose('all');
+end
+save('data.mat','c_weights','c_bias');
     
 end
-
 function graphWeight(cells, numCapa)
     figure;
     hold on;
