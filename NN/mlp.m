@@ -233,6 +233,6 @@ function [weights] = mlp(layers, functions, input, target, alpha, itmax,eent,itv
     %cerramos archivos    
     fclose('all');
     
-    save('data.mat','c_weights','c_bias','eit');
+    save('data.mat','c_weights','c_bias');
     
 end
