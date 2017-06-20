@@ -281,8 +281,6 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
-
-
 function txtNumVal_Callback(hObject, eventdata, handles)
 % hObject    handle to txtNumVal (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -345,4 +343,15 @@ eEval =  str2num(get(handles.txteEval, 'String'));
 itVal =  str2num(get(handles.txtitVal, 'String'));
 numVal = str2num(get(handles.txtNumVal, 'String'));
 mlp(archVector, functionVector, testValues, targetValues, learningRate, itMax,eEval,itVal,numVal);
+cells = matfile('data.mat');
+cellWeights = cells.c_weights;
+numCapas = size(cellWeights,2);
+figure;
+for i=1:numCapas
+    graphWeight(cellWeights(:,i),int2str(i));
+end
+
+
+
+
 
